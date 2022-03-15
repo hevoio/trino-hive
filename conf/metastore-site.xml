@@ -57,27 +57,4 @@
         <value>777</value>
     </property>
 
-
-<!--    <property>-->
-<!--        <name>google.cloud.auth.service.account.json.keyfile</name>-->
-<!--        <value>/tmp/foo/my-project-1541925960718-91c9cef36015.json</value>-->
-<!--    </property>-->
-<!--    <property>-->
-<!--        <name>google.cloud.auth.type</name>-->
-<!--        <value>SERVICE_ACCOUNT_JSON_KEYFILE</value>-->
-<!--    </property>-->
-<!--    <property>-->
-<!--        <name>google.cloud.auth.service.account.json.keyfile</name>-->
-<!--        <value>/tmp/foo/my-project-1541925960718-91c9cef36015.json</value>-->
-<!--    </property>-->
-<!--    &lt;!&ndash; https://github.com/GoogleCloudDataproc/hadoop-connectors/blob/master/gcs/INSTALL.md &ndash;&gt;-->
-<!--    <property>-->
-<!--        <name>google.cloud.auth.service.account.enable</name>-->
-<!--        <value>true</value>-->
-<!--    </property>-->
-<!--    <property>-->
-<!--        <name>hive.gcs.json-key-file-path</name>-->
-<!--        <value>/tmp/foo/my-project-1541925960718-91c9cef36015.json</value>-->
-<!--    </property>-->
-
 </configuration>
