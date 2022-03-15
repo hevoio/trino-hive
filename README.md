@@ -9,6 +9,7 @@ The instructions here relate to run Presto with data present in GCS. This setup 
 ### Steps
 - Download the [gcs connector](https://cloud.google.com/dataproc/docs/concepts/connectors/cloud-storage) and place the [jar](https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar) file in lib directory.
 - Obtain GCP [service-account credentials json](https://cloud.google.com/iam/docs/creating-managing-service-accounts) with the service-account having admin permissions on GCS. Place this file in `creds` directory
+- Set the GCP project-id against `fs.gs.project.id` in [metastore-site.xml](https://github.com/hevoio/trino-hive/blob/master/conf/metastore-site.xml#L41).
 - Run `docker-compose up -d`.
 - It should start instances of the database, metastore and Trino 
 ```
@@ -100,3 +101,6 @@ public static void main(String[] args) throws Exception {
 - [Hadoop GCS Connector](https://github.com/GoogleCloudDataproc/hadoop-connectors/blob/master/gcs/INSTALL.md)
 - [Trino GCS Configuration](https://trino.io/docs/current/connector/hive.html#google-cloud-storage-configuration)
 - [What is Presto connection?](https://ahana.io/learn/what-is-a-presto-connection-and-how-does-it-work/)
+
+### MinIO
+[MinIO](https://min.io/) is a multi-cloud object storage abstraction for any cloud. It has s3 like semantics and is compatible with most clouds. Hence, it can be a good alternate to object storage if rich abstraction is a necessity. A sample [experiment](https://medium.com/google-cloud/build-aws-s3-compatible-cloud-storage-on-gcp-with-minio-and-kubernetes-2adc0a367f98).
