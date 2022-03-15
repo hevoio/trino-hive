@@ -99,6 +99,7 @@ public static void main(String[] args) throws Exception {
 
 ### References
 - [Hadoop GCS Connector](https://github.com/GoogleCloudDataproc/hadoop-connectors/blob/master/gcs/INSTALL.md)
+- [Intro to Hive Connector](https://trino.io/blog/2020/10/20/intro-to-hive-connector.html)
 - [Trino GCS Configuration](https://trino.io/docs/current/connector/hive.html#google-cloud-storage-configuration)
 - [What is Presto connection?](https://ahana.io/learn/what-is-a-presto-connection-and-how-does-it-work/)
 
