@@ -1,0 +1,8 @@
+.idea/
+target/
+*.log
+*.DS_Store
+*/.git/*
+*.iml
+*.jar
+gcp-service-credentials.json
