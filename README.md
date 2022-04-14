@@ -44,7 +44,7 @@ Create a Schema in the Hive Catalog
 trino> CREATE SCHEMA hive.hive_gcs WITH (location = 'gs://bucket-test-tj-1/');
 CREATE SCHEMA
 ```
-Create some data in GCS. Ensure that partitions like `partion_name=foo` are present in the structure. Example:
+Create some data in GCS. Ensure that partitions like `partion_name=foo` are present in the structure and each file has 5 columns with headers `col_1`, `col_2`, `col_3`, `col_4`, `col_5`. Example:
 ![Example](https://cdn.hevodata.com/github/gcs_structure.png)
 
 Create a partitioned Hive Table
