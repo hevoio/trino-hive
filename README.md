@@ -7,7 +7,7 @@ The instructions here relate to run Presto with data present in GCS. This setup 
 - Hive Metastore with MariaDB persistence
 
 ### Steps
-- Download the [gcs connector](https://cloud.google.com/dataproc/docs/concepts/connectors/cloud-storage) and place the [jar](https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar) file in lib directory.
+- Download the [gcs connector](https://cloud.google.com/dataproc/docs/concepts/connectors/cloud-storage) and place the [jar](https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop3-latest.jar) file in `lib` directory.
 - Obtain GCP [service-account credentials json](https://cloud.google.com/iam/docs/creating-managing-service-accounts) with the service-account having admin permissions on GCS. Place this file in `creds` directory
 - Set the GCP project-id against `fs.gs.project.id` in [metastore-site.xml](https://github.com/hevoio/trino-hive/blob/master/conf/metastore-site.xml#L41).
 - Run `docker-compose up -d`.
@@ -22,6 +22,9 @@ Creating trino-hive_hive-metastore_1    ... done
 ### Access trino
 ```
 docker container exec -it trino-hive_trino-coordinator_1 trino
+
+# The following prompt must show up
+trino>
 ```
 
 ### Create Entities
