@@ -19,6 +19,9 @@ Creating trino-hive_trino-coordinator_1 ... done
 Creating trino-hive_hive-metastore_1    ... done
 ```
 
+### Access trino
+docker container exec -it trino-hive_trino-coordinator_1 trino
+
 ### Create Entities
 View Catalogs
 ```
