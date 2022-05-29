@@ -1,9 +1,12 @@
-## Trino (Presto) with Hive connector
-The instructions here relate to run Presto with data present in GCS. This setup has been adapted from this repository: [Hive connector over MinIO file storage](https://github.com/bitsondatadev/trino-getting-started/tree/main/hive/trino-minio).
+## Trino (Presto) with `Hive` & `Iceberg` connectors
+The instructions here relate to run Presto with data present in GCS. This setup has been adapted from this repository: [Hive connector over MinIO file storage](https://github.com/bitsondatadev/trino-getting-started/tree/main/hive/trino-minio). Tables can be created in two flavors:
+- Hive
+- Iceberg
 
 ### Stack
 - Trino (Presto)
 - Hive GCS connector
+- Iceberg connector
 - Hive Metastore with MariaDB persistence
 
 ### Steps
@@ -34,11 +37,15 @@ trino> show catalogs;
  Catalog
 ---------
  hive
+ iceberg
  system
  tpcds
  tpch
 (4 rows)
 ```
+
+### 1. HIVE
+
 Create a Schema in the Hive Catalog
 ```
 trino> CREATE SCHEMA hive.hive_gcs WITH (location = 'gs://bucket-test-tj-1/');
@@ -78,13 +85,55 @@ trino:hive_gcs> select * from sample_table1 where xing = 'bar' and fing = 'io';
  81    | 82    | 83    | 84    | 85    | bar  | io
 ```
 
-### Sample code
+
+### 2. ICEBERG
+
+Create a Schema in the Iceberg Catalog
+```
+trino> CREATE SCHEMA iceberg.iceberg_gcs WITH (location = 'gs://bucket-test-tj-1/');
+CREATE SCHEMA
+```
+
+Create a partitioned Iceberg Table
+```
+USE iceberg.iceberg_gcs;
+
+CREATE TABLE sample_table (
+  id bigint, name varchar, known varchar, country varchar, fact varchar
+)
+WITH (
+  format = 'PARQUET',
+  partitioning = ARRAY['country', 'fact']
+);
+
+```
+Insert some data
+```
+INSERT INTO sample_table values 
+  (25, 'James Bond', 'Agent', 'American', 'NYC'),
+  (40, 'George Bush', 'President', 'American', 'Texas'),
+  (82, 'A1', 'Football Player', 'Austria', 'Vienna')
+;
+```
+Read Data
+```
+
+trino:iceberg_gcs> select * from sample_table where country = 'American';
+
+ id |    name     |   known   | country  | fact
+----+-------------+-----------+----------+-------
+ 40 | George Bush | President | American | Texas
+ 25 | James Bond  | Agent     | American | NYC
+```
+
+
+### Sample code to read from the tables
 Maven dependency
 ```
 <dependency>
     <groupId>io.trino</groupId>
     <artifactId>trino-jdbc</artifactId>
-    <version>373</version>
+    <version>382</version>
 </dependency>
 ```
 Java Code
@@ -105,9 +154,12 @@ public static void main(String[] args) throws Exception {
 }
 ```
 
+
 ### References
 - [Hadoop GCS Connector](https://github.com/GoogleCloudDataproc/hadoop-connectors/blob/master/gcs/INSTALL.md)
 - [Intro to Hive Connector](https://trino.io/blog/2020/10/20/intro-to-hive-connector.html)
+- [Introduction to Apache Iceberg](https://iceberg.apache.org/docs/latest/)
+- [Iceberg Connector](https://trino.io/docs/current/connector/iceberg.html)
 - [Trino GCS Configuration](https://trino.io/docs/current/connector/hive.html#google-cloud-storage-configuration)
 - [What is Presto connection?](https://ahana.io/learn/what-is-a-presto-connection-and-how-does-it-work/)
 
