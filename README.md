@@ -115,6 +115,8 @@ INSERT INTO sample_table values
   (82, 'A1', 'Football Player', 'Austria', 'Vienna')
 ;
 ```
+A sample write mechanism to Iceberg table is present in [this](https://github.com/tj---/iceberg-demo) repository
+
 Read Data
 ```
 
