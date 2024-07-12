@@ -1,0 +1,88 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "trino-role-test",
+            "image": "372298436271.dkr.ecr.ap-southeast-1.amazonaws.com/trino-role-test:latest",
+            "cpu": 8192,
+            "memory": 32768,
+            "portMappings": [
+                {
+                    "name": "trino-role-test-80-tcp",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                },
+                {
+                    "name": "trino-role-test-9901-tcp",
+                    "containerPort": 9901,
+                    "hostPort": 9901,
+                    "protocol": "tcp"
+                },
+                {
+                    "name": "trino-role-test-9902-tcp",
+                    "containerPort": 9902,
+                    "hostPort": 9902,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/trino-role-test",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "ap-southeast-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        },
+        {
+            "name": "trino-otel-collector-test",
+            "image": "372298436271.dkr.ecr.ap-southeast-1.amazonaws.com/otel-collector-try:latest",
+            "cpu": 0,
+            "memoryReservation": 50,
+            "portMappings": [],
+            "essential": false,
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "secrets": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/ecs-trino-otel-collector-test",
+                    "awslogs-region": "ap-southeast-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "trino-otel-test",
+    "taskRoleArn": "arn:aws:iam::372298436271:role/trino-ecs-test-role",
+    "executionRoleArn": "arn:aws:iam::372298436271:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "8192",
+    "memory": "32768",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "tags": []
+}
