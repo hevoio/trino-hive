@@ -1,0 +1,86 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "{{ MODULE }}",
+            "image": "{{ CONTAINER_IMAGE }}",
+            "cpu": 8192,
+            "memory": 32768,
+            "portMappings": [
+                {
+                    "name": "{{ MODULE }}-80-tcp",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                },
+                {
+                    "name": "{{ MODULE }}-9901-tcp",
+                    "containerPort": 9901,
+                    "hostPort": 9901,
+                    "protocol": "tcp"
+                },
+                {
+                    "name": "{{ MODULE }}-9902-tcp",
+                    "containerPort": 9902,
+                    "hostPort": 9902,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "TRINO_HIVE_CONFIG_PATH",
+                    "value": "{{ TRINO_HIVE_CONFIG_PATH }}"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/{{ ENVIRONMENT }}-dev-{{ MODULE }}",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "{{ AWS_REGION }}",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "{{ ENVIRONMENT }}-dev-{{ MODULE }}",
+    "taskRoleArn": "{{ ECS_TASK_ROLE_ARN }}",
+    "executionRoleArn": "{{ ECS_EXECUTION_ROLE_ARN }}",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "8192",
+    "memory": "32768",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "tags": [
+        {
+            "key": "product",
+            "value": "{{ MODULE }}"
+        },
+        {
+            "key": "environment",
+            "value": "{{ ENVIRONMENT }}"
+        },
+        {
+            "key": "team",
+            "value": "dev"
+        },
+        {
+            "key": "{{ MODULE }}_version",
+            "value": "{{ CIRCLE_SHA1 }}"
+        }
+    ]
+}
