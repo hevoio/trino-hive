@@ -80,7 +80,7 @@ jobs:
 
   deploy:
     parameters:
-        environment:
+      environment:
         type: string
         default: ""
     docker:
