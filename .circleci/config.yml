@@ -151,17 +151,17 @@ jobs:
 workflows:
   build:
     jobs:
-#      - build:
-#          name: Build trino
-#          target_branch: "^(master)"
-#          ansible_service_branch: feat/IN-2937/trinoplaybooktest
-#          context:
-#            - org-global
-#            - env-test
+      - build:
+          name: Build trino
+          target_branch: "^(master)"
+          ansible_service_branch: feat/IN-2937/trinoplaybooktest
+          context:
+            - org-global
+            - env-test
       - test-deployment-approval:
           type: approval
-#          requires:
-#            - Build trino
+          requires:
+            - Build trino
           filters:
             branches:
               only:
