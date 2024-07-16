@@ -38,6 +38,8 @@ jobs:
         type: string
     machine:
       image: default
+    docker:
+      - image: cimg/python:3.10
     resource_class: medium
     shell: /bin/bash --login
     working_directory: ~/trino-hive/
