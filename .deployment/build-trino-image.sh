@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -ex
-source env_vars
 
 echo "CURRENT WORKING DIRECTORY :: ${PWD}"
 echo "S3_TRINO_HIVE_PROPERTIES_PATH  :: ${S3_TRINO_HIVE_PROPERTIES_PATH}"
