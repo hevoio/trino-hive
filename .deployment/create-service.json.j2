@@ -1,0 +1,34 @@
+{
+    "cluster": "{{ ENVIRONMENT }}-dev-trino-service",
+    "serviceName": "{{ ENVIRONMENT }}-dev-trino-service",
+    "taskDefinition": "{{ ENVIRONMENT }}-dev-trino-service",
+    "loadBalancers": [
+        {
+            "targetGroupArn": "{{ TRINO_AWS_TARGET_GROUP_ARN }}",
+            "containerName": "trino-service",
+            "containerPort": {{ TRINO_APPLICATION_PORT }}
+        }
+    ],
+    "desiredCount": {{ TRINO_DESIRED_COUNT }},
+    "clientToken": "",
+    "launchType": "FARGATE",
+    "platformVersion": "LATEST",
+    "networkConfiguration": {
+        "awsvpcConfiguration": {
+            "subnets": [
+                {{ AWS_VPC_SUBNETS }}
+            ],
+            "securityGroups": [
+                "{{ TRINO_AWS_SECURITY_GROUP_ID }}"
+            ],
+            "assignPublicIp": "DISABLED"
+        }
+    },
+    "healthCheckGracePeriodSeconds": 0,
+    "schedulingStrategy": "REPLICA",
+    "deploymentController": {
+        "type": "ECS"
+    },
+    "enableECSManagedTags": true,
+    "enableExecuteCommand": false
+}

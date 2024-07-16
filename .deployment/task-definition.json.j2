@@ -27,27 +27,64 @@
                 }
             ],
             "essential": true,
-            "environment": [
-                {
-                    "name": "TRINO_HIVE_CONFIG_PATH",
-                    "value": "{{ TRINO_HIVE_CONFIG_PATH }}"
-                }
-            ],
+            "environment": [],
             "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
             "ulimits": [],
             "logConfiguration": {
+                "logDriver": "awsfirelens",
+                "options": {
+                    "Format": "json_lines",
+                    "Header": "authorization Bearer {{ CORALOGIX_API_KEY }}",
+                    "Host": "ingress.coralogix.com",
+                    "Name": "http",
+                    "Port": "443",
+                    "Retry_Limit": "3",
+                    "TLS": "On",
+                    "URI": "/logs/v1/singles"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        },
+        {
+            "name": "log_router",
+            "image": "public.ecr.aws/aws-observability/aws-for-fluent-bit:init-latest",
+            "cpu": 0,
+            "memoryReservation": 50,
+            "portMappings": [],
+            "essential": false,
+            "environment": [
+                {
+                    "name": "aws_fluent_bit_init_s3_1",
+                    "value": "arn:aws:s3:::{{ FIRELENS_FLUENTBIT_CONFIG_BUCKET }}/firelens_fluentbit_config/fluentbit_base_filters.conf"
+                },
+                {
+                    "name": "APPLICATION_NAME",
+                    "value": "system-dev-trino-service"
+                },
+                {
+                    "name": "ENVIRONMENT",
+                    "value": "{{ ENVIRONMENT }}"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "user": "0",
+            "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "/ecs/{{ ENVIRONMENT }}-dev-{{ MODULE }}",
                     "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/{{ ENVIRONMENT }}-dev-trino-service",
                     "awslogs-region": "{{ AWS_REGION }}",
                     "awslogs-stream-prefix": "ecs"
                 },
                 "secretOptions": []
             },
-            "systemControls": []
+            "firelensConfiguration": {
+                "type": "fluentbit"
+            }
         }
     ],
     "family": "{{ ENVIRONMENT }}-dev-{{ MODULE }}",
