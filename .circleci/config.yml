@@ -2,6 +2,7 @@ version: 2.1
 orbs:
   gh: circleci/github-cli@2.3.0
   aws-cli: circleci/aws-cli@4.1.3
+  aws-ecs: circleci/aws-ecs@4.0.0
 parameters:
   GHA_Actor:
     type: string
