@@ -4,7 +4,7 @@ FROM trinodb/trino
 USER trino:trino
 
 # Copy configuration files into the container
-COPY etc/catalog/hive.properties /etc/trino/catalog/hive.properties
+COPY etc/hive.properties /etc/trino/catalog/hive.properties
 COPY etc/jvm.config /etc/trino/jvm.config
 COPY etc/config.properties /etc/trino/config.properties
 COPY etc/node.properties /etc/trino/node.properties

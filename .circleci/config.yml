@@ -22,24 +22,20 @@ parameters:
     description: Image tag to be deployed
     type: string
     default: ""
-  deploy_pipeline:
-    description: Flag to control deployment workflow via API
-    type: boolean
-    default: false
   ansible-branch:
     description: Ansible branch to use for configs
     type: string
     default: "master"
-  release_build_trigger:
-    description: Flag for release build pipeline.trigger_source
-    type: boolean
-    default: false
 jobs:
   build:
     parameters:
       target_branch:
         type: string
         default: "^(master)"
+      ansible_service_branch:
+        description: Branch to use for ansible service based on the environment.
+        default: "master"
+        type: string
     machine:
       image: default
     resource_class: medium
@@ -57,13 +53,29 @@ jobs:
       - run:
           name: Add public key to .ssh directory.
           command: echo ${GITHUB_ECDSA_PUBLIC} > ~/.ssh/id_rsa_848d8303cbe1bc703d9772fc10270a3e.pub
-      - aws-cli/setup
+      - aws-cli/setup:
+          profile_name: default
+      - run:
+          name: Clone ansible-service repository
+          command: |
+            cd ../
+            git clone git@github.com:hevoio/ansible-service.git --branch << parameters.ansible-service-branch >>
+      - run:
+          name: Setup the environment for ansible-service
+          command: |
+            cd .deployment
+            ./ansible-setup.sh
+      - run:
+          name: Generate the hive properties and node properties file and push to cloud.
+          command: |
+            cd ../ansible-service
+            ansible-playbook -i environments/<< pipeline.parameters.environment>> trino.yml
       - run:
           name: Docker pre-build
           command: ./.deployment/docker-prebuild.sh
       - run:
           name: build trino image
-          command: ./.deployment/build-service-image-loader-snowflake.sh
+          command: ./.deployment/build-trino-image.sh
       - persist_to_workspace:
           root: .
           paths:
@@ -97,21 +109,6 @@ jobs:
           role_arn: ${AWS_ASSUME_ROLE_ARN}
           source_profile: default
       - run:
-          name: Clone ansible-service repository
-          command: |
-            cd ../
-            git clone git@github.com:hevoio/ansible-service.git --branch << parameters.ansible-service-branch >>
-      - run:
-          name: Setup the environment for ansible-service
-          command: |
-            cd .deployment
-            ./ansible-setup.sh
-      - run:
-          name: Generate the hive config file and push to cloud.
-          command: |
-            cd ../ansible-service
-            ansible-playbook -i environments/<< pipeline.parameters.environment >> trino-hive-config.yml
-      - run:
           name: Install jinja cli
           command: pip3 install jinja-cli
       - run:
@@ -134,136 +131,67 @@ jobs:
             aws ecs register-task-definition \
             --cli-input-json file://.deployment/task-definition-trino.json \
             --profile=<< pipeline.parameters.environment >> \
-            --region=${AWS_REGION}     
+            --region=${AWS_REGION}
+      - run:
+          name: Create / Update AWS Service
+          command: |
+            export REVISION=`cat task-definition-response.json | jq .taskDefinition.revision`
+            echo "REVISION = ${REVISION}"
+            export TASK_ARN=`cat task-definition-response.json | jq -r .taskDefinition.taskDefinitionArn`
+            echo "export TASK_DEFINITION_ARN=${TASK_ARN}" >> $BASH_ENV
+            export STATUS=`aws ecs describe-services --cluster=${ENVIRONMENT}-dev-trino-service --service=${ENVIRONMENT}-dev-trino-service --region=${AWS_REGION} --profile=<< parameters.environment >> | jq -r '.services[].status'`
+            echo "STATUS variable value is = ${STATUS}"
+            if [ "ACTIVE" != "${STATUS}" ]; then
+                echo "CREATING THE SERVICE DEFINITION "
+                jinja -E ENVIRONMENT -E APISIX_GATEWAY_AWS_TARGET_GROUP_ARN -E APISIX_GATEWAY_DESIRED_COUNT -E AWS_VPC_SUBNETS -E APISIX_GATEWAY_AWS_SECURITY_GROUP_ID -E APISIX_GATEWAY_APPLICATION_PORT .deployment/create-service.json.j2 -o .deployment/create-service.json
+                aws ecs create-service \
+                --service-name ${ENVIRONMENT}-dev-trino-service \
+                --cli-input-json file://.deployment/create-service.json \
+                --profile=<< parameters.environment >> --region=${AWS_REGION}
+            else
+                echo "UPDATING THE SERVICE DEFINITION "
+                jinja -E ENVIRONMENT -E APISIX_GATEWAY_DESIRED_COUNT .deployment/update-service.json.j2 -o .deployment/update-service.json
+                aws ecs update-service --service ${ENVIRONMENT}-dev-trino-service \
+                --cli-input-json file://.deployment/update-service.json \
+                --profile=<< parameters.environment >> --region=${AWS_REGION} --force-new-deployment
+            fi
+      - aws-ecs/verify_revision_is_deployed:
+          cluster: ${ENVIRONMENT}-dev-trino-service
+          family:  ${ENVIRONMENT}-dev-trino-service
+          profile_name: ${ENVIRONMENT}
+          task_definition_arn: ${TASK_DEFINITION_ARN}
+          poll_interval: 60
+          max_poll_attempts: 15
 
 
 workflows:
-  loader:
-    when:
-      and:
-        - not: << pipeline.parameters.deploy_pipeline >>
-        - or:
-            - equal: [ "webhook", << pipeline.trigger_source >> ]
-            - equal: [ "api", << pipeline.trigger_source >> ]
+  build:
     jobs:
       - build:
           name: Build trino
           target_branch: "^(master)"
+          ansible-service-branch: feat/IN-2937/trinoplaybooktest
           context:
             - org-global
             - env-test
-      - gamma-deployment-approval:
-          type: approval
-          requires:
-            - Build trino
-          filters:
-            branches:
-              only:
-                - dev
-                - /^release\/.*/
-      - deploy:
-          name: Gamma Deployment
-          requires:
-            - gamma-deployment-approval
-          context:
-            - org-global
-            - env-gamma
-          filters:
-            branches:
-              only:
-                - dev
-                - /^release\/.*/
-  Perform Branch cut:
-    jobs:
-      - approve-branch-cut:
-          type: approval
-          context:
-            - env-us3
-          filters:
-            branches:
-              only: dev
-      - perform-branch-cut:
-          requires:
-            - approve-branch-cut
-          context:
-            - org-global
-            - env-us3
-          filters:
-            branches:
-              only: dev
-
-  Release artifact:
-    when:
-      and:
-        - equal: [ "api", << pipeline.trigger_source >> ]
-        - << pipeline.parameters.release_build_trigger >>
-    jobs:
-      - build:
-          name: Build release candidate
-          context:
-            - org-global
-            - env-us3
-          filters:
-            branches:
-              only: /^release\/.*/
-
-  Deploy-Workflow:
-    when:
-      and:
-        - equal: [ "api", << pipeline.trigger_source >> ]
-        - << pipeline.parameters.deploy_pipeline >>
-    jobs:
-      - deploy:
-          name: << pipeline.parameters.environment >> Deployment s3-connector service
-          context:
-            - org-global
-            - env-<< pipeline.parameters.environment >>
-          ansible-service-branch: << pipeline.parameters.ansible-branch >>
-
-  Perform Debug Release Branch Cut:
-    jobs:
-      - approve-debug-release:
-          type: approval
-          context:
-            - env-us3
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
-
-      - perform-debug-branch-cut:
-          requires:
-            - approve-debug-release
-          context:
-            - org-global
-            - env-us3
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
-
-  Perform Hotfix Branch Cut:
-    jobs:
-      - approve-hotfix-release:
-          type: approval
-          context:
-            - env-us3
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
-
-      - perform-hotfix-branch-cut:
-          requires:
-            - approve-hotfix-release
-          context:
-            - org-global
-            - env-us3
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
+#      - test-deployment-approval:
+#          type: approval
+#          requires:
+#            - Build trino
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - /^release\/.*/
+#      - deploy:
+#          name: test Deployment
+#          requires:
+#            - test-deployment-approval
+#          context:
+#            - org-global
+#            - env-test
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - /^release\/.*/
