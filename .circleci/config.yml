@@ -36,8 +36,6 @@ jobs:
         description: Branch to use for ansible service based on the environment.
         default: "master"
         type: string
-    machine:
-      image: default
     docker:
       - image: cimg/python:3.10
     resource_class: medium
