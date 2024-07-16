@@ -55,6 +55,8 @@ jobs:
           command: echo ${GITHUB_ECDSA_PUBLIC} > ~/.ssh/id_rsa_848d8303cbe1bc703d9772fc10270a3e.pub
       - aws-cli/setup:
           profile_name: default
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Clone ansible-service repository
           command: |
