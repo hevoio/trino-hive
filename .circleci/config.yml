@@ -112,7 +112,7 @@ jobs:
             --profile=<< pipeline.parameters.environment >> \
             --region=${AWS_REGION}
       - run:
-          name: Create / Update AWS Service
+          name: Create / Update AWS ECS Trino Service
           command: |
             export REVISION=`cat task-definition-response.json | jq .taskDefinition.revision`
             echo "REVISION = ${REVISION}"
@@ -165,6 +165,7 @@ workflows:
                 - feat/DEST-357/configs-for-trino
       - deploy:
           name: test Deployment
+          environment: test
           requires:
             - test-deployment-approval
           context:
