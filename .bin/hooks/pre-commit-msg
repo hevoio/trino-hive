@@ -1,0 +1,15 @@
+#!/bin/bash
+
+MESSAGE=$(cat $1)
+COMMITFORMAT="^(feat|bugfix|hotfix|merge|revert):(.+)$"
+
+if ! [[ "$MESSAGE" =~ $COMMITFORMAT ]]; then
+  echo -e "\n\n\033[0;31mYour commit violates commit message convention and hence blocked from pushing to remote.\033[0m"
+  echo "You can refer to https://hevodata.atlassian.net/wiki/spaces/DEVX/pages/3132358657/Branch+naming+and+Commit+message+convention+Hevo for details"
+  echo ""
+  echo "Please use the following format (examples):"
+  echo "feat: feature example comment"
+  echo "bugfix: bugfix example comment"
+  echo ""
+  exit 1
+fi

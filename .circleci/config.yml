@@ -47,6 +47,9 @@ jobs:
       - checkout:
           path: ~/trino-hive
       - gh/setup
+      - run:
+          name: Run PR checks
+          command: ./bin/pr-checks.sh
       - add_ssh_keys:
           fingerprints:
             - "SHA256:721iHdvInx4iFO+tnXsFTec7AJQqwrm+jd+S9EF8dBs"
@@ -78,16 +81,12 @@ jobs:
       - run:
           name: build trino image
           command: ./.deployment/build-trino-image.sh
-      - persist_to_workspace:
-          root: .
-          paths:
-            - env_vars
 
   deploy:
     parameters:
       ansible-service-branch:
         description: Branch to use for ansible service based on the environment.
-        default: "dev"
+        default: "master"
         type: string
     docker:
       - image: cimg/python:3.10
