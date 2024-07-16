@@ -158,16 +158,16 @@ workflows:
 #          context:
 #            - org-global
 #            - env-test
-      - test-deployment-approval:
-          type: approval
-          requires:
-            - Build trino
-          filters:
-            branches:
-              only:
-                - dev
-                - /^release\/.*/
-                - feat/DEST-357/configs-for-trino
+#      - test-deployment-approval:
+#          type: approval
+#          requires:
+#            - Build trino
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - /^release\/.*/
+#                - feat/DEST-357/configs-for-trino
       - deploy:
           name: test Deployment
           environment: test
