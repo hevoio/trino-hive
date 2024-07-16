@@ -79,6 +79,10 @@ jobs:
           command: ./.deployment/build-trino-image.sh
 
   deploy:
+    parameters:
+        environment:
+        type: string
+        default: ""
     docker:
       - image: cimg/python:3.10
     resource_class: medium
