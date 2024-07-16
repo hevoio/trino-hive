@@ -59,7 +59,7 @@ jobs:
           name: Clone ansible-service repository
           command: |
             cd ../
-            git clone git@github.com:hevoio/ansible-service.git --branch << parameters.ansible-service-branch >>
+            git clone git@github.com:hevoio/ansible-service.git --branch << parameters.ansible_service_branch >>
       - run:
           name: Setup the environment for ansible-service
           command: |
@@ -170,7 +170,7 @@ workflows:
       - build:
           name: Build trino
           target_branch: "^(master)"
-          ansible-service-branch: feat/IN-2937/trinoplaybooktest
+          ansible_service_branch: feat/IN-2937/trinoplaybooktest
           context:
             - org-global
             - env-test
