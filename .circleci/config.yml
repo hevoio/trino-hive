@@ -108,7 +108,7 @@ jobs:
             export CONTAINER_IMAGE="475116478827.dkr.ecr.${AWS_REGION}.amazonaws.com/trino-service:${image_tag}"
             export MODULE="trino-service"
             export TRINO_HIVE_CONFIG_PATH="${TRINO_HIVE_CONFIG_PATH}"
-            jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CIRCLE_SHA1 -E CORALOGIX_API_KEY .deployment/task-definition.json.j2 -o .deployment/task-definition.json
+            jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CIRCLE_SHA1 -E CORALOGIX_API_KEY -E FIRELENS_FLUENTBIT_CONFIG_BUCKET .deployment/task-definition.json.j2 -o .deployment/task-definition.json
       - run:
           name: Create Task Definition for trino service
           command: |
