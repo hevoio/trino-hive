@@ -71,7 +71,7 @@ jobs:
           name: Generate the hive properties and node properties file and push to cloud.
           command: |
             cd ../ansible-service
-            ansible-playbook -i environments/<< pipeline.parameters.environment>> trino.yml
+            ansible-playbook -i environments/<< pipeline.parameters.environment>> trino-service.yml
       - run:
           name: Docker pre-build
           command: ./.deployment/docker-prebuild.sh
@@ -154,7 +154,7 @@ workflows:
       - build:
           name: Build trino
           target_branch: "^(master)"
-          ansible_service_branch: feat/IN-2937/trinoplaybooktest
+          ansible_service_branch: dev
           context:
             - org-global
             - env-test
@@ -167,7 +167,6 @@ workflows:
               only:
                 - dev
                 - /^release\/.*/
-                - feat/DEST-357/configs-for-trino
       - deploy:
           name: test Deployment
           environment: test
@@ -181,4 +180,3 @@ workflows:
               only:
                 - dev
                 - /^release\/.*/
-                - feat/DEST-357/configs-for-trino
