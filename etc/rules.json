@@ -1,0 +1,16 @@
+{
+  "queries": [
+    {
+      "role": "admin",
+      "allow": ["execute", "kill", "view"]
+    },
+    {
+      "user": "trino-user",
+      "allow": ["execute", "kill", "view"]
+    },
+    {
+      "user": "trino-ui-user",
+      "allow": ["view"]
+    }
+  ]
+}
