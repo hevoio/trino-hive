@@ -1,15 +1,11 @@
 {
   "queries": [
     {
-      "role": "admin",
+      "user": "hevo-trino-rw-user",
       "allow": ["execute", "kill", "view"]
     },
     {
-      "user": "trino-user",
-      "allow": ["execute", "kill", "view"]
-    },
-    {
-      "user": "trino-ui-user",
+      "user": "hevo-trino-ro-user",
       "allow": ["view"]
     }
   ]
