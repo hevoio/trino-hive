@@ -154,7 +154,7 @@ workflows:
       - build:
           name: Build trino
           target_branch: "^(master)"
-          ansible_service_branch: dev
+          ansible_service_branch: feat/IN-2937/trinoplaybooktest
           context:
             - org-global
             - env-test
