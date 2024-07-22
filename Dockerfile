@@ -5,7 +5,7 @@ USER trino:trino
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o /home/trino/get-pip.py && \
     python3 /home/trino/get-pip.py && \
-    pip3 install awscli
+    /home/trino/.local/bin/pip3 install awscli
 
 # Copy configuration files into the container
 #COPY etc/hive.properties /etc/trino/catalog/hive.properties
