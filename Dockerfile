@@ -3,8 +3,8 @@ FROM trinodb/trino
 
 USER trino:trino
 
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-RUN python3 get-pip.py
+RUN curl https://bootstrap.pypa.io/get-pip.py -o /home/trino/get-pip.py
+RUN python3 /home/trino/get-pip.py
 
 RUN pip3 install awscli
 
