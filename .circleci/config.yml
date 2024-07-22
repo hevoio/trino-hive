@@ -22,7 +22,7 @@ parameters:
   ansible-branch:
     description: Ansible branch to use for configs
     type: string
-    default: "master"
+    default: "dev"
 jobs:
   build:
     parameters:
@@ -31,7 +31,7 @@ jobs:
         default: "^(master)"
       ansible_service_branch:
         description: Branch to use for ansible service based on the environment.
-        default: "master"
+        default: "dev"
         type: string
     docker:
       - image: cimg/python:3.10
@@ -108,7 +108,7 @@ jobs:
             export CONTAINER_IMAGE="475116478827.dkr.ecr.${AWS_REGION}.amazonaws.com/trino-service:${image_tag}"
             export MODULE="trino-service"
             export TRINO_HIVE_CONFIG_PATH="${TRINO_HIVE_CONFIG_PATH}"
-            jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CIRCLE_SHA1 -E CORALOGIX_API_KEY -E FIRELENS_FLUENTBIT_CONFIG_BUCKET .deployment/task-definition.json.j2 -o .deployment/task-definition.json
+            jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CORALOGIX_API_KEY -E FIRELENS_FLUENTBIT_CONFIG_BUCKET .deployment/task-definition.json.j2 -o .deployment/task-definition.json
       - run:
           name: Create Task Definition for trino service
           command: |
@@ -162,7 +162,6 @@ workflows:
             branches:
               only:
                 - dev
-                - feat/DEST-357/configs-for-trino
       - test-deployment-approval:
           name: test deployment approval
           type: approval
@@ -172,7 +171,6 @@ workflows:
             branches:
               only:
                 - dev
-                - feat/DEST-357/configs-for-trino
       - deploy:
           name: test deployment
           environment: test
@@ -185,7 +183,6 @@ workflows:
             branches:
               only:
                 - dev
-                - feat/DEST-357/configs-for-trino
       - build:
           name: Build production trino
           target_branch: "^(master)"
