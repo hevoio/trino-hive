@@ -172,7 +172,7 @@ workflows:
           name: test deployment
           environment: test
           requires:
-            - test-deployment-approval
+            - test deployment approval
           context:
             - org-global
             - env-test
@@ -201,7 +201,7 @@ workflows:
           name: india deployment
           environment: india
           requires:
-            - india-deployment-approval
+            - india deployment approval
           context:
             - org-global
             - env-india
