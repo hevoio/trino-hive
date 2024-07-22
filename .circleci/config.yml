@@ -151,7 +151,7 @@ jobs:
 workflows:
   build:
     jobs:
-      - test-build:
+      - build:
           name: Build test trino
           target_branch: "^(master)"
           ansible_service_branch: feat/IN-2937/trinoplaybooktest
@@ -159,6 +159,7 @@ workflows:
             - org-global
             - env-test
       - test-deployment-approval:
+          name: test deployment approval
           type: approval
           requires:
             - Build test trino
@@ -167,7 +168,7 @@ workflows:
               only:
                 - dev
                 - feat/DEST-357/configs-for-trino
-      - test-deploy:
+      - deploy:
           name: test deployment
           environment: test
           requires:
@@ -180,7 +181,7 @@ workflows:
               only:
                 - dev
                 - feat/DEST-357/configs-for-trino
-      - production-build:
+      - build:
           name: Build production trino
           target_branch: "^(master)"
           ansible_service_branch: master
@@ -188,6 +189,7 @@ workflows:
             - org-global
             - env-india
       - india-deployment-approval:
+          name: india deployment approval
           type: approval
           requires:
             - Build production trino
@@ -195,7 +197,7 @@ workflows:
             branches:
               only:
                 - master
-      - india-deploy:
+      - deploy:
           name: india deployment
           environment: india
           requires:
