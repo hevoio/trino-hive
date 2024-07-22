@@ -3,6 +3,13 @@ FROM trinodb/trino
 
 USER trino:trino
 
+RUN apt-get update; \
+        apt-get install -y --no-install-recommends \
+            python3-setuptools \
+            python3-pip;
+
+RUN pip3 install awscli
+
 # Copy configuration files into the container
 #COPY etc/hive.properties /etc/trino/catalog/hive.properties
 COPY etc/jvm.config /etc/trino/jvm.config
