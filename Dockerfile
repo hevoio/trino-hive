@@ -3,10 +3,10 @@ FROM trinodb/trino
 
 USER trino:trino
 
-RUN apt-get update; \
-        apt-get install -y --no-install-recommends \
-            python3-setuptools \
-            python3-pip;
+RUN apk update && \
+    apk add --no-cache \
+        py3-setuptools \
+        py3-pip
 
 RUN pip3 install awscli
 
