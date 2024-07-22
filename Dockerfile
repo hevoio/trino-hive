@@ -15,7 +15,7 @@ COPY etc/rules.json /etc/rules.json
 
 # Set entrypoint to start Trino with the provided configuration files
 #CMD ["/usr/lib/trino/bin/run-trino"]
-COPY start.sh start.sh
+COPY .deployment/start.sh start.sh
 
 RUN chmod 766 start.sh
 
