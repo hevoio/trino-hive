@@ -27,7 +27,16 @@
                 }
             ],
             "essential": true,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "S3_TRINO_HIVE_PROPERTIES_PATH",
+                    "value": "s3://hevo-artifacts/trino-service/{{ ENVIRONMENT }}/hive.properties"
+                },
+                {
+                    "name": "S3_TRINO_NODE_PROPERTIES_PATH",
+                    "value": "s3://hevo-artifacts/trino-service/{{ ENVIRONMENT }}/node.properties"
+                }
+            ],
             "environmentFiles": [],
             "mountPoints": [],
             "volumesFrom": [],
