@@ -167,6 +167,7 @@ workflows:
               only:
                 - dev
                 - /^release\/.*/
+                - feat/DEST-357/configs-for-trino
       - deploy:
           name: test Deployment
           environment: test
@@ -180,3 +181,4 @@ workflows:
               only:
                 - dev
                 - /^release\/.*/
+                - feat/DEST-357/configs-for-trino
