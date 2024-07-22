@@ -1,0 +1,132 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "{{ MODULE }}",
+            "image": "{{ CONTAINER_IMAGE }}",
+            "cpu": 8192,
+            "memory": 32768,
+            "portMappings": [
+                {
+                    "name": "{{ MODULE }}-80-tcp",
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                },
+                {
+                    "name": "{{ MODULE }}-9901-tcp",
+                    "containerPort": 9901,
+                    "hostPort": 9901,
+                    "protocol": "tcp"
+                },
+                {
+                    "name": "{{ MODULE }}-9902-tcp",
+                    "containerPort": 9902,
+                    "hostPort": 9902,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "S3_TRINO_HIVE_PROPERTIES_PATH",
+                    "value": "s3://hevo-artifacts/trino-service/{{ ENVIRONMENT }}/hive.properties"
+                },
+                {
+                    "name": "S3_TRINO_NODE_PROPERTIES_PATH",
+                    "value": "s3://hevo-artifacts/trino-service/{{ ENVIRONMENT }}/node.properties"
+                }
+            ],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awsfirelens",
+                "options": {
+                    "Format": "json_lines",
+                    "Header": "authorization Bearer {{ CORALOGIX_API_KEY }}",
+                    "Host": "ingress.coralogix.com",
+                    "Name": "http",
+                    "Port": "443",
+                    "Retry_Limit": "3",
+                    "TLS": "On",
+                    "URI": "/logs/v1/singles"
+                },
+                "secretOptions": []
+            },
+            "systemControls": []
+        },
+        {
+            "name": "log_router",
+            "image": "public.ecr.aws/aws-observability/aws-for-fluent-bit:init-latest",
+            "cpu": 0,
+            "memoryReservation": 50,
+            "portMappings": [],
+            "essential": false,
+            "environment": [
+                {
+                    "name": "aws_fluent_bit_init_s3_1",
+                    "value": "arn:aws:s3:::{{ FIRELENS_FLUENTBIT_CONFIG_BUCKET }}/firelens_fluentbit_config/fluentbit_base_filters.conf"
+                },
+                {
+                    "name": "APPLICATION_NAME",
+                    "value": "system-dev-trino-service"
+                },
+                {
+                    "name": "ENVIRONMENT",
+                    "value": "{{ ENVIRONMENT }}"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "user": "0",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-create-group": "true",
+                    "awslogs-group": "/ecs/{{ ENVIRONMENT }}-dev-trino-service",
+                    "awslogs-region": "{{ AWS_REGION }}",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "firelensConfiguration": {
+                "type": "fluentbit"
+            }
+        }
+    ],
+    "family": "{{ ENVIRONMENT }}-dev-{{ MODULE }}",
+    "taskRoleArn": "{{ ECS_TASK_ROLE_ARN }}",
+    "executionRoleArn": "{{ ECS_EXECUTION_ROLE_ARN }}",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "8192",
+    "memory": "32768",
+    "runtimePlatform": {
+        "cpuArchitecture": "ARM64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "tags": [
+        {
+            "key": "product",
+            "value": "{{ MODULE }}"
+        },
+        {
+            "key": "environment",
+            "value": "{{ ENVIRONMENT }}"
+        },
+        {
+            "key": "team",
+            "value": "dev"
+        },
+        {
+            "key": "{{ MODULE }}_version",
+            "value": "{{ CIRCLE_SHA1 }}"
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+  "queries": [
+    {
+      "user": "hevo-trino-rw-user",
+      "allow": ["execute", "kill", "view"]
+    },
+    {
+      "user": "hevo-trino-ro-user",
+      "allow": ["view"]
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+version: 2.1
+orbs:
+  gh: circleci/github-cli@2.3.0
+  aws-cli: circleci/aws-cli@4.1.3
+  aws-ecs: circleci/aws-ecs@4.0.0
+parameters:
+  GHA_Actor:
+    type: string
+    default: ""
+  GHA_Action:
+    type: string
+    default: ""
+  GHA_Event:
+    type: string
+    default: ""
+  GHA_Meta:
+    type: string
+    default: ""
+  environment:
+    type: string
+    default: "test"
+  ansible-branch:
+    description: Ansible branch to use for configs
+    type: string
+    default: "dev"
+jobs:
+  build:
+    parameters:
+      target_branch:
+        type: string
+        default: "^(master)"
+      ansible_service_branch:
+        description: Branch to use for ansible service based on the environment.
+        default: "dev"
+        type: string
+    docker:
+      - image: cimg/python:3.10
+    resource_class: medium
+    shell: /bin/bash --login
+    working_directory: ~/trino-hive/
+    environment:
+      GITHUB_TOKEN: GH_TOKEN
+    steps:
+      - checkout:
+          path: ~/trino-hive
+      - gh/setup
+      - run:
+          name: Run PR checks
+          command: ./bin/pr-checks.sh
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:721iHdvInx4iFO+tnXsFTec7AJQqwrm+jd+S9EF8dBs"
+      - run:
+          name: Add public key to .ssh directory.
+          command: echo ${GITHUB_ECDSA_PUBLIC} > ~/.ssh/id_rsa_848d8303cbe1bc703d9772fc10270a3e.pub
+      - aws-cli/setup:
+          profile_name: default
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Clone ansible-service repository
+          command: |
+            cd ../
+            git clone git@github.com:hevoio/ansible-service.git --branch << parameters.ansible_service_branch >>
+      - run:
+          name: Setup the environment for ansible-service
+          command: |
+            cd .deployment
+            ./ansible-setup.sh
+      - run:
+          name: Generate the hive properties and node properties file and push to cloud.
+          command: |
+            cd ../ansible-service
+            ansible-playbook -i environments/<< pipeline.parameters.environment>> trino-service.yml
+      - run:
+          name: Docker pre-build
+          command: ./.deployment/docker-prebuild.sh
+      - run:
+          name: build trino image
+          command: ./.deployment/build-trino-image.sh
+
+  deploy:
+    parameters:
+      environment:
+        type: string
+        default: ""
+    docker:
+      - image: cimg/python:3.10
+    resource_class: medium
+    working_directory: ~/trino-hive/
+    steps:
+      - checkout:
+          path: ~/trino-hive/
+      - aws-cli/setup:
+          profile_name: default
+      - aws-cli/role_arn_setup:
+          profile_name: << pipeline.parameters.environment >>
+          role_arn: ${AWS_ASSUME_ROLE_ARN}
+          source_profile: default
+      - run:
+          name: Install jinja cli
+          command: pip3 install jinja-cli
+      - run:
+          name: Render task definition json using jinja for trino service
+          command: |
+            export image_tag=$(echo "$CIRCLE_BRANCH" | sed -e "s/\//_/g")
+            export ENVIRONMENT=<< pipeline.parameters.environment >>
+            export CONTAINER_IMAGE="475116478827.dkr.ecr.${AWS_REGION}.amazonaws.com/trino-service:${image_tag}"
+            export MODULE="trino-service"
+            export TRINO_HIVE_CONFIG_PATH="${TRINO_HIVE_CONFIG_PATH}"
+            jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CORALOGIX_API_KEY -E FIRELENS_FLUENTBIT_CONFIG_BUCKET .deployment/task-definition.json.j2 -o .deployment/task-definition.json
+      - run:
+          name: Create Task Definition for trino service
+          command: |
+            aws ecs register-task-definition \
+            --cli-input-json file://.deployment/task-definition.json \
+            --profile=<< pipeline.parameters.environment >> \
+            --region=${AWS_REGION} > task-definition-response.json
+      - run:
+          name: Create / Update AWS ECS Trino Service
+          command: |
+            export REVISION=`cat task-definition-response.json | jq .taskDefinition.revision`
+            echo "REVISION = ${REVISION}"
+            export TASK_ARN=`cat task-definition-response.json | jq -r .taskDefinition.taskDefinitionArn`
+            echo "export TASK_DEFINITION_ARN=${TASK_ARN}" >> $BASH_ENV
+            export STATUS=`aws ecs describe-services --cluster=${ENVIRONMENT}-dev-trino-service --service=${ENVIRONMENT}-dev-trino-service --region=${AWS_REGION} --profile=<< parameters.environment >> | jq -r '.services[].status'`
+            echo "STATUS variable value is = ${STATUS}"
+            if [ "ACTIVE" != "${STATUS}" ]; then
+                echo "CREATING THE SERVICE DEFINITION "
+                jinja -E ENVIRONMENT -E TRINO_AWS_TARGET_GROUP_ARN -E TRINO_DESIRED_COUNT -E AWS_VPC_SUBNETS -E TRINO_AWS_SECURITY_GROUP_ID -E TRINO_APPLICATION_PORT .deployment/create-service.json.j2 -o .deployment/create-service.json
+                aws ecs create-service \
+                --service-name ${ENVIRONMENT}-dev-trino-service \
+                --cli-input-json file://.deployment/create-service.json \
+                --profile=<< parameters.environment >> --region=${AWS_REGION}
+            else
+                echo "UPDATING THE SERVICE DEFINITION "
+                jinja -E ENVIRONMENT -E TRINO_DESIRED_COUNT .deployment/update-service.json.j2 -o .deployment/update-service.json
+                aws ecs update-service --service ${ENVIRONMENT}-dev-trino-service \
+                --cli-input-json file://.deployment/update-service.json \
+                --profile=<< parameters.environment >> --region=${AWS_REGION} --force-new-deployment
+            fi
+      - aws-ecs/verify_revision_is_deployed:
+          cluster: ${ENVIRONMENT}-dev-trino-service
+          family:  ${ENVIRONMENT}-dev-trino-service
+          profile_name: ${ENVIRONMENT}
+          task_definition_arn: ${TASK_DEFINITION_ARN}
+          poll_interval: 60
+          max_poll_attempts: 15
+
+
+workflows:
+  build:
+    jobs:
+      - build:
+          name: Build test trino
+          target_branch: "^(master)"
+          ansible_service_branch: dev
+          context:
+            - org-global
+            - env-test
+          filters:
+            branches:
+              ignore:
+                - dev
+      - test-deployment-approval:
+          name: test deployment approval
+          type: approval
+          requires:
+            - Build test trino
+          filters:
+            branches:
+              ignore:
+                - dev
+      - deploy:
+          name: test deployment
+          environment: test
+          requires:
+            - test deployment approval
+          context:
+            - org-global
+            - env-test
+          filters:
+            branches:
+              ignore:
+                - dev
+      - build:
+          name: Build production trino
+          target_branch: "^(master)"
+          ansible_service_branch: master
+          context:
+            - org-global
+            - env-india
+          filters:
+            branches:
+              only:
+                - dev
+      - india-deployment-approval:
+          name: india deployment approval
+          type: approval
+          requires:
+            - Build production trino
+          filters:
+            branches:
+              only:
+                - dev
+      - deploy:
+          name: india deployment
+          environment: india
+          requires:
+            - india deployment approval
+          context:
+            - org-global
+            - env-india
+          filters:
+            branches:
+              only:
+                - dev
