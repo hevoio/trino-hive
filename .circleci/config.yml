@@ -154,10 +154,15 @@ workflows:
       - build:
           name: Build test trino
           target_branch: "^(master)"
-          ansible_service_branch: feat/IN-2937/trinoplaybooktest
+          ansible_service_branch: dev
           context:
             - org-global
             - env-test
+          filters:
+            branches:
+              only:
+                - dev
+                - feat/DEST-357/configs-for-trino
       - test-deployment-approval:
           name: test deployment approval
           type: approval
@@ -188,6 +193,10 @@ workflows:
           context:
             - org-global
             - env-india
+          filters:
+            branches:
+              only:
+                - master
       - india-deployment-approval:
           name: india deployment approval
           type: approval
