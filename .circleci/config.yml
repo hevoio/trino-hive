@@ -160,7 +160,7 @@ workflows:
             - env-test
           filters:
             branches:
-              only:
+              ignore:
                 - dev
       - test-deployment-approval:
           name: test deployment approval
@@ -169,7 +169,7 @@ workflows:
             - Build test trino
           filters:
             branches:
-              only:
+              ignore:
                 - dev
       - deploy:
           name: test deployment
@@ -181,7 +181,7 @@ workflows:
             - env-test
           filters:
             branches:
-              only:
+              ignore:
                 - dev
       - build:
           name: Build production trino
@@ -193,7 +193,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - dev
       - india-deployment-approval:
           name: india deployment approval
           type: approval
@@ -202,7 +202,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - dev
       - deploy:
           name: india deployment
           environment: india
@@ -214,4 +214,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - dev
