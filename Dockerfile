@@ -3,9 +3,11 @@ FROM trinodb/trino
 
 USER trino:trino
 
+ENV PATH="$PATH:/home/trino/.local/bin"
+
 RUN curl https://bootstrap.pypa.io/get-pip.py -o /home/trino/get-pip.py && \
     python3 /home/trino/get-pip.py && \
-    /home/trino/.local/bin/pip3 install awscli
+    pip3 install awscli
 
 # Copy configuration files into the container
 #COPY etc/hive.properties /etc/trino/catalog/hive.properties
