@@ -151,33 +151,33 @@ jobs:
 workflows:
   build:
     jobs:
-      - build:
-          name: Build test trino
-          target_branch: "^(master)"
-          ansible_service_branch: dev
-          context:
-            - org-global
-            - env-test
-          filters:
-            branches:
-              only:
-                - dev
-                - feat/DEST-357/configs-for-trino
-      - test-deployment-approval:
-          name: test deployment approval
-          type: approval
-          requires:
-            - Build test trino
-          filters:
-            branches:
-              only:
-                - dev
-                - feat/DEST-357/configs-for-trino
+#      - build:
+#          name: Build test trino
+#          target_branch: "^(master)"
+#          ansible_service_branch: dev
+#          context:
+#            - org-global
+#            - env-test
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - feat/DEST-357/configs-for-trino
+#      - test-deployment-approval:
+#          name: test deployment approval
+#          type: approval
+#          requires:
+#            - Build test trino
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#                - feat/DEST-357/configs-for-trino
       - deploy:
           name: test deployment
           environment: test
-          requires:
-            - test deployment approval
+#          requires:
+#            - test deployment approval
           context:
             - org-global
             - env-test
