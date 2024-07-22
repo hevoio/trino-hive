@@ -17,8 +17,6 @@ COPY etc/rules.json /etc/rules.json
 #CMD ["/usr/lib/trino/bin/run-trino"]
 COPY .deployment/start.sh start.sh
 
-RUN chmod 766 start.sh
-
 CMD ["./start.sh"]
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s \
