@@ -3,10 +3,8 @@ FROM trinodb/trino
 
 USER trino:trino
 
-RUN yum update -y && \
-    yum install -y \
-        python3-setuptools \
-        python3-pip
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3 get-pip.py
 
 RUN pip3 install awscli
 
