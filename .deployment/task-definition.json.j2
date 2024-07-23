@@ -71,7 +71,7 @@
                 },
                 {
                     "name": "APPLICATION_NAME",
-                    "value": "system-dev-trino-service"
+                    "value": "system-trino-service"
                 },
                 {
                     "name": "ENVIRONMENT",
@@ -85,7 +85,7 @@
                 "logDriver": "awslogs",
                 "options": {
                     "awslogs-create-group": "true",
-                    "awslogs-group": "/ecs/{{ ENVIRONMENT }}-dev-trino-service",
+                    "awslogs-group": "/ecs/{{ ENVIRONMENT }}-trino-service",
                     "awslogs-region": "{{ AWS_REGION }}",
                     "awslogs-stream-prefix": "ecs"
                 },
@@ -96,7 +96,7 @@
             }
         }
     ],
-    "family": "{{ ENVIRONMENT }}-dev-{{ MODULE }}",
+    "family": "{{ ENVIRONMENT }}-{{ MODULE }}",
     "taskRoleArn": "{{ ECS_TASK_ROLE_ARN }}",
     "executionRoleArn": "{{ ECS_EXECUTION_ROLE_ARN }}",
     "networkMode": "awsvpc",
