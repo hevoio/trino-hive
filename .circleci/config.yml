@@ -101,7 +101,7 @@ jobs:
           command: |
             export image_tag=$(echo "$CIRCLE_BRANCH" | sed -e "s/\//_/g")
             export ENVIRONMENT=<< parameters.environment >>
-            export CONTAINER_IMAGE="475116478827.dkr.ecr.${AWS_REGION}.amazonaws.com/trino-service:${image_tag}"
+            export CONTAINER_IMAGE="475116478827.dkr.ecr.ap-southeast-1.amazonaws.com/trino-service:${image_tag}"
             export MODULE="trino-service"
             jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CORALOGIX_API_KEY -E FIRELENS_FLUENTBIT_CONFIG_BUCKET .deployment/task-definition.json.j2 -o .deployment/task-definition.json
       - run:
