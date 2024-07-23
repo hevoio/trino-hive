@@ -67,7 +67,7 @@ jobs:
           name: Generate the hive properties and node properties file and push to cloud.
           command: |
             cd ../ansible-service
-            ansible-playbook -i environments/<< pipeline.parameters.environment>> trino-service.yml
+            ansible-playbook -i environments/<< parameters.environment>> trino-service.yml
       - run:
           name: Docker pre-build
           command: ./.deployment/docker-prebuild.sh
@@ -90,7 +90,7 @@ jobs:
       - aws-cli/setup:
           profile_name: default
       - aws-cli/role_arn_setup:
-          profile_name: << pipeline.parameters.environment >>
+          profile_name: << parameters.environment >>
           role_arn: ${AWS_ASSUME_ROLE_ARN}
           source_profile: default
       - run:
@@ -100,7 +100,7 @@ jobs:
           name: Render task definition json using jinja for trino service
           command: |
             export image_tag=$(echo "$CIRCLE_BRANCH" | sed -e "s/\//_/g")
-            export ENVIRONMENT=<< pipeline.parameters.environment >>
+            export ENVIRONMENT=<< parameters.environment >>
             export CONTAINER_IMAGE="475116478827.dkr.ecr.${AWS_REGION}.amazonaws.com/trino-service:${image_tag}"
             export MODULE="trino-service"
             export TRINO_HIVE_CONFIG_PATH="${TRINO_HIVE_CONFIG_PATH}"
@@ -110,7 +110,7 @@ jobs:
           command: |
             aws ecs register-task-definition \
             --cli-input-json file://.deployment/task-definition.json \
-            --profile=<< pipeline.parameters.environment >> \
+            --profile=<< parameters.environment >> \
             --region=${AWS_REGION} > task-definition-response.json
       - run:
           name: Create / Update AWS ECS Trino Service
