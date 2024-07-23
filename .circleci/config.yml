@@ -146,32 +146,32 @@ jobs:
 workflows:
   build:
     jobs:
-      - build:
-          name: Build test trino
-          environment: test
-          target_branch: "^(master)"
-          ansible_service_branch: dev
-          context:
-            - org-global
-            - env-test
-          filters:
-            branches:
-              ignore:
-                - dev
-      - test-deployment-approval:
-          name: test deployment approval
-          type: approval
-          requires:
-            - Build test trino
-          filters:
-            branches:
-              ignore:
-                - dev
+#      - build:
+#          name: Build test trino
+#          environment: test
+#          target_branch: "^(master)"
+#          ansible_service_branch: dev
+#          context:
+#            - org-global
+#            - env-test
+#          filters:
+#            branches:
+#              ignore:
+#                - dev
+#      - test-deployment-approval:
+#          name: test deployment approval
+#          type: approval
+#          requires:
+#            - Build test trino
+#          filters:
+#            branches:
+#              ignore:
+#                - dev
       - deploy:
           name: test deployment
           environment: test
-          requires:
-            - test deployment approval
+#          requires:
+#            - test deployment approval
           context:
             - org-global
             - env-test
