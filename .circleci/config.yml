@@ -103,7 +103,6 @@ jobs:
             export ENVIRONMENT=<< parameters.environment >>
             export CONTAINER_IMAGE="475116478827.dkr.ecr.${AWS_REGION}.amazonaws.com/trino-service:${image_tag}"
             export MODULE="trino-service"
-            export TRINO_HIVE_CONFIG_PATH="${TRINO_HIVE_CONFIG_PATH}"
             jinja -E ENVIRONMENT -E ECS_TASK_ROLE_ARN -E ECS_EXECUTION_ROLE_ARN -E CONTAINER_IMAGE -E MODULE -E AWS_REGION -E CORALOGIX_API_KEY -E FIRELENS_FLUENTBIT_CONFIG_BUCKET .deployment/task-definition.json.j2 -o .deployment/task-definition.json
       - run:
           name: Create Task Definition for trino service
@@ -119,25 +118,25 @@ jobs:
             echo "REVISION = ${REVISION}"
             export TASK_ARN=`cat task-definition-response.json | jq -r .taskDefinition.taskDefinitionArn`
             echo "export TASK_DEFINITION_ARN=${TASK_ARN}" >> $BASH_ENV
-            export STATUS=`aws ecs describe-services --cluster=${ENVIRONMENT}-dev-trino-service --service=${ENVIRONMENT}-dev-trino-service --region=${AWS_REGION} --profile=<< parameters.environment >> | jq -r '.services[].status'`
+            export STATUS=`aws ecs describe-services --cluster=${ENVIRONMENT}-trino-service --service=${ENVIRONMENT}-trino-service --region=${AWS_REGION} --profile=<< parameters.environment >> | jq -r '.services[].status'`
             echo "STATUS variable value is = ${STATUS}"
             if [ "ACTIVE" != "${STATUS}" ]; then
                 echo "CREATING THE SERVICE DEFINITION "
                 jinja -E ENVIRONMENT -E TRINO_AWS_TARGET_GROUP_ARN -E TRINO_DESIRED_COUNT -E AWS_VPC_SUBNETS -E TRINO_AWS_SECURITY_GROUP_ID -E TRINO_APPLICATION_PORT .deployment/create-service.json.j2 -o .deployment/create-service.json
                 aws ecs create-service \
-                --service-name ${ENVIRONMENT}-dev-trino-service \
+                --service-name ${ENVIRONMENT}-trino-service \
                 --cli-input-json file://.deployment/create-service.json \
                 --profile=<< parameters.environment >> --region=${AWS_REGION}
             else
                 echo "UPDATING THE SERVICE DEFINITION "
                 jinja -E ENVIRONMENT -E TRINO_DESIRED_COUNT .deployment/update-service.json.j2 -o .deployment/update-service.json
-                aws ecs update-service --service ${ENVIRONMENT}-dev-trino-service \
+                aws ecs update-service --service ${ENVIRONMENT}-trino-service \
                 --cli-input-json file://.deployment/update-service.json \
                 --profile=<< parameters.environment >> --region=${AWS_REGION} --force-new-deployment
             fi
       - aws-ecs/verify_revision_is_deployed:
-          cluster: ${ENVIRONMENT}-dev-trino-service
-          family:  ${ENVIRONMENT}-dev-trino-service
+          cluster: ${ENVIRONMENT}-trino-service
+          family:  ${ENVIRONMENT}-trino-service
           profile_name: ${ENVIRONMENT}
           task_definition_arn: ${TASK_DEFINITION_ARN}
           poll_interval: 60
