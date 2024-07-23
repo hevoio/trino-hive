@@ -179,36 +179,36 @@ workflows:
             branches:
               ignore:
                 - dev
-      - build:
-          name: Build production trino
-          environment: india
-          target_branch: "^(master)"
-          ansible_service_branch: master
-          context:
-            - org-global
-            - env-india
-          filters:
-            branches:
-              only:
-                - dev
-      - india-deployment-approval:
-          name: india deployment approval
-          type: approval
-          requires:
-            - Build production trino
-          filters:
-            branches:
-              only:
-                - dev
-      - deploy:
-          name: india deployment
-          environment: india
-          requires:
-            - india deployment approval
-          context:
-            - org-global
-            - env-india
-          filters:
-            branches:
-              only:
-                - dev
+#      - build:
+#          name: Build production trino
+#          environment: india
+#          target_branch: "^(master)"
+#          ansible_service_branch: master
+#          context:
+#            - org-global
+#            - env-india
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#      - india-deployment-approval:
+#          name: india deployment approval
+#          type: approval
+#          requires:
+#            - Build production trino
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#      - deploy:
+#          name: india deployment
+#          environment: india
+#          requires:
+#            - india deployment approval
+#          context:
+#            - org-global
+#            - env-india
+#          filters:
+#            branches:
+#              only:
+#                - dev
